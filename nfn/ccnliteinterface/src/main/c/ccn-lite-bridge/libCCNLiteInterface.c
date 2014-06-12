@@ -1,9 +1,13 @@
-
+#define USE_JNI_LIB
 
 #include <stdio.h>
 #include "ccnliteinterface_CCNLiteInterface.h"
-#include "ccnb.c"
-#include "ccn-lite-ccnb2xml-java.c"
+
+#include "../../../../../../pkt-ccnb.h"
+#include "../../../../../../pkt-ccnb-enc.c"
+#include "../../../../../../pkt-ccnb-dec.c"
+#include "../../../../../../util/ccn-lite-ctrl.c"
+#include "../../../../../../util/ccn-lite-pktdump.c"
 
 // #ifdef __APPLE__
 #include "open_memstream.h"
@@ -21,7 +25,7 @@ Java_ccnliteinterface_CCNLiteInterface_ccnbToXml(JNIEnv *env, jobject obj, jbyte
 
 
     // For now the result is written to a file (stream buffer does crash for some reason)
-    remove("c_mxl.txt");
+    remove("c_xml.txt");
     FILE *file = fopen("c_xml.txt", "w");
     if (file == NULL)
     {
@@ -29,8 +33,10 @@ Java_ccnliteinterface_CCNLiteInterface_ccnbToXml(JNIEnv *env, jobject obj, jbyte
         exit(1);
     }
 
+    int isRawXml = 1;
+    pktdump(interestData, len, file, isRawXml);
     // Writes the ccnb interest as xml to the stream
-    ccnb2xml(0, interestData, &buf, &len, NULL, file, false);
+    // ccnb2xml(0, interestData, &buf, &len, NULL, file, false);
 
     fflush(file);
     close(file);
@@ -68,6 +74,7 @@ Java_ccnliteinterface_CCNLiteInterface_ccnbToXml(JNIEnv *env, jobject obj, jbyte
     // fprintf("'%s'", Java_ccnliteinterface_string);
     // printf("======\n%s======\n", (*env)->GetStringUTFChars(env, Java_ccnliteinterface_string, 0));
 
+    remove("c_xml.txt");
 
     return Java_ccnliteinterface_string;
 }
@@ -184,10 +191,11 @@ Java_ccnliteinterface_CCNLiteInterface_mkBinaryInterest(JNIEnv *env,
 
     // mk the ccnb interest
     len = mkInterest(components, componentCount,
-             minSuffix, maxSuffix,
-             digest, dlen,
-             publisher, plen,
-             scope, &nonce,
+             // minSuffix, maxSuffix,
+             // digest, dlen,
+             // publisher, plen,
+             // scope,
+             &nonce,
              out);
 
     jbyteArray javaByteArray = (*env)->NewByteArray(env, len);

@@ -83,21 +83,23 @@ case class CCNLiteProcess(nodeConfig: NFNNodeConfig, withCompute: Boolean) exten
 
   def start() = {
 
-    val ccnliteExecutable = if(withCompute) "../ccn-nfn-relay" else "../ccn-lite-relay"
-    val cmd = s"$ccnliteExecutable -v 99 -u $port -x $sockName"
-//    println(s"$processName-$prefix: executing: '$cmd'")
-    val processBuilder = new ProcessBuilder(cmd.split(" "): _*)
-    processBuilder.redirectErrorStream(true)
-    process = processBuilder.start
+//    if (port != 10010) {
+      val ccnliteExecutable = if (withCompute) "../ccn-nfn-relay" else "../ccn-lite-relay"
+      val cmd = s"$ccnliteExecutable -v 99 -u $port -x $sockName"
+      //    println(s"$processName-$prefix: executing: '$cmd'")
+      val processBuilder = new ProcessBuilder(cmd.split(" "): _*)
+      processBuilder.redirectErrorStream(true)
+      process = processBuilder.start
 
 
 
-    val lsr = new LogStreamReaderToFile(process.getInputStream, s"ccnlite-$host-$port", appendTimestamp = true)
-    val thread = new Thread(lsr, s"LogStreamReader-$prefix")
-    thread.start()
+      val lsr = new LogStreamReaderToFile(process.getInputStream, s"ccnlite-$host-$port", appendTimestamp = true)
+      val thread = new Thread(lsr, s"LogStreamReader-$prefix")
+      thread.start()
 
-    }
+//    }
     globalFaceId = 2
+  }
 
   def stop() = {
 //    println(s"$processName-$prefix: stop")

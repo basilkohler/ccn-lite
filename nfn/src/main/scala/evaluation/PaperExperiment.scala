@@ -17,7 +17,7 @@ import java.io.File
 
 object PaperExperiment extends App {
 
-  val expNum = 1
+  val expNum = 5
 
   val node1 = StandardNodeFactory.forId(1)
   val node2 = StandardNodeFactory.forId(2, isCCNOnly = true)
@@ -138,7 +138,7 @@ object PaperExperiment extends App {
   val ts = Translate().toString
   val wc = WordCountService().toString
 
-  node1 ? (ts appl node1.prefix.append("dummy"))
+//  node1 ? (ts appl node1.prefix.append("dummy"))
 
   Thread.sleep(2000)
 
