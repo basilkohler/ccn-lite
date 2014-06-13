@@ -77,3 +77,26 @@ object CCNLite extends Logging {
     ccnIf.mkAddToCacheInterest(ccnbAbsoluteFilename)
   }
 }
+
+
+object CCNLiteTest extends App {
+  val i = Interest("test", "name")
+  println("creating binary interst")
+  val bi = CCNLite.mkBinaryInterest(i)
+
+  println(s"creating parsed interst for:\n${new String(bi)}")
+
+  val parsedI = CCNLite.ccnbToXml(bi)
+
+  println(s"parsed interest:\n$parsedI")
+
+  val c = Content("contentyo".getBytes, "test", "content", "name")
+
+  println(s"creating binary content object")
+  val bc = CCNLite.mkBinaryContent(c)
+  println(s"creating parsed content for:\n${new String(bc)}")
+
+  val parsedC = CCNLite.ccnbToXml(bc)
+
+  println(s"parsedC: $parsedC")
+}

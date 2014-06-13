@@ -11,7 +11,7 @@ import network.NFNCommunication
 */
 class CCNLiteInterfaceTest extends FlatSpec with Matchers with GivenWhenThen {
   val ccnIf = new CCNLiteInterface()
-  val interest = Interest("/name/interest")
+  val interest = Interest("name", "interest")
 
   s"Interest $interest" should "be converted to ccnb back to xml into interest object" in {
     Given("cnnb for name")
@@ -24,7 +24,7 @@ class CCNLiteInterfaceTest extends FlatSpec with Matchers with GivenWhenThen {
     resultInterest.get.name should be (Seq("name", "interest"))
   }
 
-  val content:Content = Content("testcontent".getBytes, "/name/content")
+  val content:Content = Content("testcontent".getBytes, "name", "content")
 
   s"Content $content" should "be converted to ccnb back to xml into content object" in {
     Given("cnnb for name and content")

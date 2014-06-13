@@ -1,8 +1,11 @@
 #define USE_JNI_LIB
+#define USE_SUITE_CCNB
+#define CCNL_NFN
 
 #include <stdio.h>
 #include "ccnliteinterface_CCNLiteInterface.h"
 
+#include "../../../../../../ccnl.h"
 #include "../../../../../../pkt-ccnb.h"
 #include "../../../../../../pkt-ccnb-enc.c"
 #include "../../../../../../pkt-ccnb-dec.c"
@@ -34,7 +37,10 @@ Java_ccnliteinterface_CCNLiteInterface_ccnbToXml(JNIEnv *env, jobject obj, jbyte
     }
 
     int isRawXml = 1;
-    pktdump(interestData, len, file, isRawXml);
+    int suite = 0; // CCNB
+
+
+    pktdump(interestData, len, suite, isRawXml, file);
     // Writes the ccnb interest as xml to the stream
     // ccnb2xml(0, interestData, &buf, &len, NULL, file, false);
 
@@ -66,7 +72,10 @@ Java_ccnliteinterface_CCNLiteInterface_ccnbToXml(JNIEnv *env, jobject obj, jbyte
         exit(3);
     }
 
-    if (file != NULL) fclose(file);
+    if (file != NULL) {
+        fclose(file);
+        // remove("c_xml.txt");
+    }
     // (*env)->ReleaseByteArrayElements(env, binaryInterest, jInterestData, 0);
     // TODO remove temp file
     // remove("c_mxl.txt");
@@ -74,7 +83,6 @@ Java_ccnliteinterface_CCNLiteInterface_ccnbToXml(JNIEnv *env, jobject obj, jbyte
     // fprintf("'%s'", Java_ccnliteinterface_string);
     // printf("======\n%s======\n", (*env)->GetStringUTFChars(env, Java_ccnliteinterface_string, 0));
 
-    remove("c_xml.txt");
 
     return Java_ccnliteinterface_string;
 }
@@ -93,7 +101,7 @@ Java_ccnliteinterface_CCNLiteInterface_mkBinaryContent(JNIEnv *env,
 {
 
     char *components[CCNL_MAX_NAME_COMP], *component;
-    int componentCount = 0;
+    int componentCount = 0, componentLen = 0;
     unsigned char content_data[8*1024], *buf;
 
     unsigned char out[65*1024];
@@ -119,17 +127,17 @@ Java_ccnliteinterface_CCNLiteInterface_mkBinaryContent(JNIEnv *env,
                                                                     i);
         component = (*env)->GetStringUTFChars(env, cmpString, 0);
         components[i] = malloc(strlen(component) + 1);
+        memset(components[i], '\0', strlen(component));
         strcpy(components[i], component);
     }
-
-
+    components[componentCount] = NULL;
 
 
     binary_content_len = mkContent(components,
-                                   componentCount,
-                                   publisher,
-                                   publisher_len,
-                                   private_key_path,
+                                   // componentCount,
+                                   // publisher,
+                                   // publisher_len,
+                                   // private_key_path,
                                    content_data,
                                    content_len,
                                    out);
@@ -178,11 +186,11 @@ Java_ccnliteinterface_CCNLiteInterface_mkBinaryInterest(JNIEnv *env,
                                                                     nameComponentStringArray,
                                                                     i);
         component = (*env)->GetStringUTFChars(env, cmpString, 0);
-        int cmpStringLen = (*env)->GetStringLength(env, cmpString);
-        components[i] = malloc(cmpStringLen + 1);
-        memcpy(components[i], component, cmpStringLen);
-        components[i][cmpStringLen] = '\0';
+        components[i] = malloc(strlen(component) + 1);
+        memset(components[i], '\0', strlen(component));
+        strcpy(components[i], component);
     }
+    components[componentCount] = NULL;
     // init the nonce
     if(time((time_t*) &nonce) == -1) {
         sprintf(stderr, "<native> Could not create nonce\n");
@@ -190,7 +198,8 @@ Java_ccnliteinterface_CCNLiteInterface_mkBinaryInterest(JNIEnv *env,
     }
 
     // mk the ccnb interest
-    len = mkInterest(components, componentCount,
+    len = mkInterest(components,
+             // componentCount,
              // minSuffix, maxSuffix,
              // digest, dlen,
              // publisher, plen,
